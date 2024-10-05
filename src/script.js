@@ -38,6 +38,7 @@ import neptuneTexture from '/images/neptune.jpg';
 import plutoTexture from '/images/plutomap.jpg';
 
 async function loadPlanetsFromJSON() {
+    // https://nbolton.pythonanywhere.com/planets/telediam/5'
     try {
         // Use Fetch API to load the planets.json file
         const response = await fetch('https://nbolton.pythonanywhere.com/planets/telediam/5'); // Update with the correct path to your JSON file
@@ -100,7 +101,6 @@ console.log("Add the ambient light");
 var lightAmbient = new THREE.AmbientLight(0x222222, 6);
 scene.add(lightAmbient);
 
-// ******  Star background  ******
 
 
 // ******  CONTROLS  ******
@@ -135,6 +135,7 @@ function onMouseMove(event) {
 
 // ******  SELECT PLANET  ******
 let selectedPlanet = null;
+let selectedExoplanet = null
 let isMovingTowardsPlanet = false;
 let targetCameraPosition = new THREE.Vector3();
 let offset;
@@ -146,11 +147,14 @@ function onDocumentMouseDown(event) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
+    var intersects2 = raycaster.intersectObjects(exoplanetsArray, true); // Use true for recursive checking
     var intersects = raycaster.intersectObjects(raycastTargets);
 
     if (intersects.length > 0) {
         const clickedObject = intersects[0].object;
         selectedPlanet = identifyPlanet(clickedObject);
+
+
         if (selectedPlanet) {
             closeInfoNoZoomOut();
 
@@ -165,6 +169,19 @@ function onDocumentMouseDown(event) {
             targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(offset));
             isMovingTowardsPlanet = true;
         }
+    }
+    if (intersects2.length > 0) {
+        const clickedExoplanet = intersects2[0].object;
+        selectedPlanet = identifyExoplanet(clickedExoplanet);
+        console.log(selectedPlanet);
+        console.log(selectedPlanet);
+        console.log(selectedPlanet);
+        console.log(selectedPlanet);
+        // Handle the selected exoplanet
+        console.log('You clicked on an exoplanet:', clickedExoplanet);
+
+        // For example, you could zoom in or show planet info
+        showPlanetInfo(clickedExoplanet.name || "Unknown Exoplanet");
     }
 }
 
@@ -198,9 +215,13 @@ function identifyPlanet(clickedObject) {
         offset = 10;
         return pluto;
     }
+    return null;
+}
 
-
-
+function identifyExoplanet(clickedObject) {
+    if (clickedObject in textureMap) {
+        return textureMap[clickedObject.material];
+    }
     return null;
 }
 
@@ -360,13 +381,16 @@ function createPlanet(planetName, size, position, tilt, texture, bump, ring, atm
     return {name, planet, planet3d, Atmosphere, moons, planetSystem, Ring};
 }
 
+const exoplanetsArray = []; // Array to store exoplanet meshes
+const textureMap = {};
+
 function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moons, emissiveColor = 0x1232112) {
     const material = new THREE.MeshPhongMaterial({
         map: loadTexture.load(texture),
         emissive: emissiveColor,  // Set emissive color
-        emissiveIntensity: 500,  // Adjust intensity as needed
-    });
+        emissiveIntensity: 100,  // Adjust intensity as needed
 
+    });
 
 
     const name = planetName;
@@ -379,9 +403,11 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
     let Ring;
     planet.position.set(position.x, position.y, position.z);
     planet.rotation.z = tilt * Math.PI / 180;
+    exoplanetsArray.push(planet3d);
 
-    // Add orbit path if needed
-    // ...
+    var exoplanetTexture = `${funTexture}`;
+    textureMap[texture] = planet3d;
+
 
     // Add atmosphere
     if (atmosphere) {
@@ -395,6 +421,8 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
         });
         Atmosphere = new THREE.Mesh(atmosphereGeom, atmosphereMaterial);
         Atmosphere.rotation.z = 0.41;
+
+
         planet.add(Atmosphere);
     }
 
@@ -429,6 +457,8 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
 
     return {name, planet, planet3d, Atmosphere, moons, planetSystem, emissiveColor};
 }
+
+console.log(exoplanetsArray);
 
 // ******  LOADING OBJECTS METHOD  ******
 function loadObject(path, position, scale, callback) {
@@ -605,7 +635,7 @@ function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
     return new THREE.Vector3(x, y, z);
 }
 
-const exoplanetsArray = []; // Array to store exoplanet meshes
+var materialExoplanetMap = {};
 async function createExoplanetsFromJSON() {
     const exoplanets = await loadPlanetsFromJSON();
 
@@ -629,9 +659,10 @@ async function createExoplanetsFromJSON() {
         console.log(`Calculated position for exoplanet ${pl_name}:`, position);
 
         // Create the planet
-        const planet = createExoplanet(pl_name, 4, position, 0, funTexture);
+        const planet = createExoplanet(pl_name, 30, position, 0, funTexture);
 
         console.log(`Created exoplanet ${pl_name} at position`, position);
+
 
         // Add the planet to the scene
         scene.add(planet.planet3d);
@@ -732,8 +763,9 @@ const planetData = {
 // Array of planets and atmospheres for raycasting
 const raycastTargets = [
     mercury.planet, venus.planet, venus.Atmosphere, earth.planet, earth.Atmosphere,
-    mars.planet, jupiter.planet, saturn.planet, uranus.planet, neptune.planet, pluto.planet
+    mars.planet, jupiter.planet, saturn.planet, uranus.planet, neptune.planet, pluto.planet,
 ];
+
 
 // ******  SHADOWS  ******
 renderer.shadowMap.enabled = true;
