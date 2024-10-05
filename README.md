@@ -1,4 +1,1 @@
-# spaceapps-hwo-navigator
-
-
-yup
+# SpaceApps (HWO Navigator)
