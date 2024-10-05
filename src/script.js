@@ -37,11 +37,10 @@ import uraRingTexture from '/images/uranus_ring.png';
 import neptuneTexture from '/images/neptune.jpg';
 import plutoTexture from '/images/plutomap.jpg';
 
-async function loadPlanetsFromJSON() {
-    // https://nbolton.pythonanywhere.com/planets/telediam/5'
+async function loadPlanetsFromJSON(diameter=5) {
     try {
         // Use Fetch API to load the planets.json file
-        const response = await fetch('https://nbolton.pythonanywhere.com/planets/telediam/5'); // Update with the correct path to your JSON file
+        const response = await fetch(`https://nbolton.pythonanywhere.com/planets/telediam/${diameter}`); // Update with the correct path to your JSON file
         return await response.json();
 
     } catch (error) {
@@ -102,7 +101,6 @@ var lightAmbient = new THREE.AmbientLight(0x222222, 6);
 scene.add(lightAmbient);
 
 
-
 // ******  CONTROLS  ******
 const gui = new dat.GUI({autoPlace: false});
 const customContainer = document.getElementById('gui-container');
@@ -112,7 +110,8 @@ customContainer.appendChild(gui.domElement);
 const settings = {
     accelerationOrbit: 1,
     acceleration: 1,
-    sunIntensity: 1.9
+    sunIntensity: 1.9,
+    telescopeDiameter: 5
 };
 
 gui.add(settings, 'accelerationOrbit', 0, 10).onChange(value => {
@@ -122,6 +121,9 @@ gui.add(settings, 'acceleration', 0, 10).onChange(value => {
 gui.add(settings, 'sunIntensity', 1, 10).onChange(value => {
     sunMat.emissiveIntensity = value;
 });
+gui.add(settings, 'telescopeDiameter', 5, 15, 1).onFinishChange(value => {
+    createExoplanetsFromJSON(value);
+})
 
 // mouse movement
 const raycaster = new THREE.Raycaster();
@@ -388,8 +390,7 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
     const material = new THREE.MeshPhongMaterial({
         map: loadTexture.load(texture),
         emissive: emissiveColor,  // Set emissive color
-        emissiveIntensity: 100,  // Adjust intensity as needed
-
+        emissiveIntensity: 500,  // Adjust intensity as needed
     });
 
 
@@ -635,18 +636,25 @@ function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
     return new THREE.Vector3(x, y, z);
 }
 
+// to keep track of what exoplanets are rendered
+var renderedExoplanets = [];
 var materialExoplanetMap = {};
-async function createExoplanetsFromJSON() {
-    const exoplanets = await loadPlanetsFromJSON();
+async function createExoplanetsFromJSON(diameter=5) {
+    const exoplanets = await loadPlanetsFromJSON(diameter);
+
+    renderedExoplanets.forEach(exoplanet =>{
+        scene.remove(exoplanet);
+    });
+    renderedExoplanets = [];
 
     exoplanets.forEach(planetData => {
-        const {pl_name, ra, dec, sy_dist} = planetData;
+        const {pl_name, ra, dec, sy_dist, pl_rade} = planetData;
 
         const ra_num = parseFloat(ra);
         const dec_num = parseFloat(dec);
         const distance_num = parseFloat(sy_dist);
 
-        console.log(`Creating exoplanet ${pl_name} with ra: ${ra_num}, dec: ${dec_num}, distance: ${distance_num}`);
+        // console.log(`Creating exoplanet ${pl_name} with ra: ${ra_num}, dec: ${dec_num}, distance: ${distance_num}`);
 
         if (isNaN(ra_num) || isNaN(dec_num) || isNaN(distance_num) || distance_num <= 0) {
             console.error(`Invalid data for exoplanet ${pl_name}, skipping.`);
@@ -656,22 +664,24 @@ async function createExoplanetsFromJSON() {
         // Calculate the position using RA, Dec, and scaled distance
         const position = calculateExoplanetPosition(ra_num, dec_num, distance_num);
 
-        console.log(`Calculated position for exoplanet ${pl_name}:`, position);
+        // console.log(`Calculated position for exoplanet ${pl_name}:`, position);
 
         // Create the planet
-        const planet = createExoplanet(pl_name, 30, position, 0, funTexture);
+        const planet = createExoplanet(pl_name, pl_rade*4, position, 0, funTexture);
 
-        console.log(`Created exoplanet ${pl_name} at position`, position);
-
+        // console.log(`Created exoplanet ${pl_name} at position`, position);
 
         // Add the planet to the scene
         scene.add(planet.planet3d);
+
+        // Add planet to rendered exoplanets
+        renderedExoplanets.push(planet.planet3d);
     });
 }
 
 
 // Call the function to create exoplanets
-createExoplanetsFromJSON();
+await createExoplanetsFromJSON();
 
 
 // ******  PLANETS DATA  ******
