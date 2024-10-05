@@ -39,13 +39,8 @@ import plutoTexture from '/images/plutomap.jpg';
 async function loadPlanetsFromJSON() {
     try {
         // Use Fetch API to load the planets.json file
-        const response = await fetch('/data/data3.json'); // Update with the correct path to your JSON file
-        const planets = await response.json();
-
-        return planets;
-
-
-
+        const response = await fetch('https://nbolton.pythonanywhere.com/planets/telediam/5'); // Update with the correct path to your JSON file
+        return await response.json();
 
     } catch (error) {
         console.error('Error loading planets JSON:', error);
@@ -104,15 +99,7 @@ var lightAmbient = new THREE.AmbientLight(0x222222, 6);
 scene.add(lightAmbient);
 
 // ******  Star background  ******
-scene.background = cubeTextureLoader.load([
 
-    bgTexture3,
-    bgTexture1,
-    bgTexture2,
-    bgTexture2,
-    bgTexture4,
-    bgTexture2
-]);
 
 // ******  CONTROLS  ******
 const gui = new dat.GUI({autoPlace: false});
@@ -369,52 +356,30 @@ function createPlanet(planetName, size, position, tilt, texture, bump, ring, atm
     return {name, planet, planet3d, Atmosphere, moons, planetSystem, Ring};
 }
 
-function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moon, ra_rad, dec_rad) {
+function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moons, emissiveColor = 0x1232112) {
+    const material = new THREE.MeshPhongMaterial({
+        map: loadTexture.load(texture),
+        emissive: emissiveColor,  // Set emissive color
+        emissiveIntensity: 500,  // Adjust intensity as needed
+    });
 
-    let material;
-    if (texture instanceof THREE.Material) {
-        material = texture;
-    } else if (bump) {
-        material = new THREE.MeshPhongMaterial({
-            map: loadTexture.load(texture),
-            bumpMap: loadTexture.load(bump),
-            bumpScale: 0.7
-        });
-    } else {
-        material = new THREE.MeshPhongMaterial({
-            map: loadTexture.load(texture)
-        });
-    }
+
 
     const name = planetName;
     const geometry = new THREE.SphereGeometry(size, 32, 20);
     const planet = new THREE.Mesh(geometry, material);
-    const planet3d = new THREE.Object3D;
+    const planet3d = new THREE.Object3D();
     const planetSystem = new THREE.Group();
     planetSystem.add(planet);
     let Atmosphere;
     let Ring;
-    planet.position.x = position;
+    planet.position.set(position.x, position.y, position.z);
     planet.rotation.z = tilt * Math.PI / 180;
 
-    // add orbit path
-    const orbitPath = new THREE.EllipseCurve(
-        0, 0,            // ax, aY
-        position, position, // xRadius, yRadius
-        0, 2 * Math.PI,   // aStartAngle, aEndAngle
-        false,            // aClockwise
-        0                 // aRotation
-    );
+    // Add orbit path if needed
+    // ...
 
-    const pathPoints = orbitPath.getPoints(100);
-    const orbitGeometry = new THREE.BufferGeometry().setFromPoints(pathPoints);
-    const orbitMaterial = new THREE.LineBasicMaterial({color: 0xFFFFFF, transparent: true, opacity: 0.03});
-    const orbit = new THREE.LineLoop(orbitGeometry, orbitMaterial);
-    orbit.rotation.x = Math.PI / 2;
-    planetSystem.add(orbit);
-
-
-    //add atmosphere
+    // Add atmosphere
     if (atmosphere) {
         const atmosphereGeom = new THREE.SphereGeometry(size + 0.1, 32, 20);
         const atmosphereMaterial = new THREE.MeshPhongMaterial({
@@ -423,14 +388,13 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
             opacity: 0.4,
             depthTest: true,
             depthWrite: false
-        })
-        Atmosphere = new THREE.Mesh(atmosphereGeom, atmosphereMaterial)
-
+        });
+        Atmosphere = new THREE.Mesh(atmosphereGeom, atmosphereMaterial);
         Atmosphere.rotation.z = 0.41;
         planet.add(Atmosphere);
     }
 
-    //add moons
+    // Add moons
     if (moons) {
         moons.forEach(moon => {
             let moonMaterial;
@@ -454,10 +418,12 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
             moon.mesh = moonMesh;
         });
     }
-    //add planet system to planet3d object and to the scene
+
+    // Add planet system to planet3d object and to the scene
     planet3d.add(planetSystem);
     scene.add(planet3d);
-    return {name, planet, planet3d, Atmosphere, moons, planetSystem, dec_rad, ra_rad};
+
+    return {name, planet, planet3d, Atmosphere, moons, planetSystem, emissiveColor};
 }
 
 // ******  LOADING OBJECTS METHOD  ******
@@ -472,34 +438,6 @@ function loadObject(path, position, scale, callback) {
         if (callback) {
             callback(obj);
         }
-    }, undefined, function (error) {
-        console.error('An error happened', error);
-    });
-}
-
-// ******  ASTEROIDS  ******
-const asteroids = [];
-
-function loadAsteroids(path, numberOfAsteroids, minOrbitRadius, maxOrbitRadius) {
-    const loader = new GLTFLoader();
-    loader.load(path, function (gltf) {
-        gltf.scene.traverse(function (child) {
-            if (child.isMesh) {
-                for (let i = 0; i < numberOfAsteroids / 12; i++) { // Divide by 12 because there are 12 asteroids in the pack
-                    const asteroid = child.clone();
-                    const orbitRadius = THREE.MathUtils.randFloat(minOrbitRadius, maxOrbitRadius);
-                    const angle = Math.random() * Math.PI * 2;
-                    const x = orbitRadius * Math.cos(angle);
-                    const y = 0;
-                    const z = orbitRadius * Math.sin(angle);
-                    child.receiveShadow = true;
-                    asteroid.position.set(x, y, z);
-                    asteroid.scale.setScalar(THREE.MathUtils.randFloat(0.8, 1.2));
-                    scene.add(asteroid);
-                    asteroids.push(asteroid);
-                }
-            }
-        });
     }, undefined, function (error) {
         console.error('An error happened', error);
     });
@@ -641,6 +579,64 @@ const neptune = new createPlanet('Neptune', 24 / 4, 340, 28, neptuneTexture);
 
 const pluto = new createPlanet('Pluto', 1, 350, 57, plutoTexture)
 
+function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
+    if (isNaN(ra_degrees) || isNaN(dec_degrees) || isNaN(distance) || distance <= 0) {
+        console.error("Invalid position values:", ra_degrees, dec_degrees, distance);
+        return new THREE.Vector3(0, 0, 0);
+    }
+
+    // Adjust the scaling factor based on your scene's scale
+    const SCALE_FACTOR = 800; // This value may need tweaking
+
+    const ra_rad = ra_degrees * Math.PI / 180;
+    const dec_rad = dec_degrees * Math.PI / 180;
+    const scaledDistance = distance * SCALE_FACTOR;
+
+    const x = scaledDistance * Math.cos(dec_rad) * Math.cos(ra_rad);
+    const y = scaledDistance * Math.cos(dec_rad) * Math.sin(ra_rad);
+    const z = scaledDistance * Math.sin(dec_rad);
+
+    console.log(`Calculated position x: ${x}, y: ${y}, z: ${z} for exoplanet`);
+
+    return new THREE.Vector3(x, y, z);
+}
+
+const exoplanetsArray = []; // Array to store exoplanet meshes
+async function createExoplanetsFromJSON() {
+    const exoplanets = await loadPlanetsFromJSON();
+
+    exoplanets.forEach(planetData => {
+        const {pl_name, ra, dec, sy_dist} = planetData;
+
+        const ra_num = parseFloat(ra);
+        const dec_num = parseFloat(dec);
+        const distance_num = parseFloat(sy_dist);
+
+        console.log(`Creating exoplanet ${pl_name} with ra: ${ra_num}, dec: ${dec_num}, distance: ${distance_num}`);
+
+        if (isNaN(ra_num) || isNaN(dec_num) || isNaN(distance_num) || distance_num <= 0) {
+            console.error(`Invalid data for exoplanet ${pl_name}, skipping.`);
+            return;
+        }
+
+        // Calculate the position using RA, Dec, and scaled distance
+        const position = calculateExoplanetPosition(ra_num, dec_num, distance_num);
+
+        console.log(`Calculated position for exoplanet ${pl_name}:`, position);
+
+        // Create the planet
+        const planet = createExoplanet(pl_name, 4, position, 0, funTexture);
+
+        console.log(`Created exoplanet ${pl_name} at position`, position);
+
+        // Add the planet to the scene
+        scene.add(planet.planet3d);
+    });
+}
+
+
+// Call the function to create exoplanets
+createExoplanetsFromJSON();
 
 
 // ******  PLANETS DATA  ******
@@ -843,12 +839,6 @@ function animate() {
         });
     }
 
-// Rotate asteroids
-    asteroids.forEach(asteroid => {
-        asteroid.rotation.y += 0.0001;
-        asteroid.position.x = asteroid.position.x * Math.cos(0.0001 * settings.accelerationOrbit) + asteroid.position.z * Math.sin(0.0001 * settings.accelerationOrbit);
-        asteroid.position.z = asteroid.position.z * Math.cos(0.0001 * settings.accelerationOrbit) - asteroid.position.x * Math.sin(0.0001 * settings.accelerationOrbit);
-    });
 
 // ****** OUTLINES ON PLANETS ******
     raycaster.setFromCamera(mouse, camera);
@@ -896,8 +886,7 @@ function animate() {
     composer.render();
 }
 
-loadAsteroids('/asteroids/asteroidPack.glb', 1000, 130, 160);
-loadAsteroids('/asteroids/asteroidPack.glb', 3000, 352, 370);
+
 animate();
 
 window.addEventListener('mousemove', onMouseMove, false);
