@@ -433,6 +433,8 @@ const earthMaterial = new THREE.ShaderMaterial({
 });
 
 
+
+
 // ******  MOONS  ******
 // Earth
 const earthMoon = [{
@@ -462,6 +464,8 @@ const marsMoons = [
     mesh: null
   }
 ];
+
+
 
 // Jupiter
 const jupiterMoons = [
