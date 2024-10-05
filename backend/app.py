@@ -32,7 +32,9 @@ def getPlanetsByTelescopeDiameter(diameter: int = 5):
     data = data[data['sy_dist'] < data['ESmax']]
 
     json_data = json.loads(data.to_json(orient='records'))
-    return jsonify(json_data)
+    response = jsonify(json_data)
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
 
 if __name__ == '__main__':
     app.run()
