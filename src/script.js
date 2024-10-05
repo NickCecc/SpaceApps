@@ -500,6 +500,8 @@ const mercury = new createPlanet('Mercury', 2.4, 40, 0, mercuryTexture, mercuryB
 const venus = new createPlanet('Venus', 6.1, 65, 3, venusTexture, venusBump, null, venusAtmosphere);
 const earth = new createPlanet('Earth', 6.4, 90, 23, earthMaterial, null, null, earthAtmosphere, earthMoon);
 const mars = new createPlanet('Mars', 3.4, 115, 25, marsTexture, marsBump)
+
+
 // Load Mars moons
 marsMoons.forEach(moon => {
   loadObject(moon.modelPath, moon.position, moon.scale, function(loadedModel) {
