@@ -12,6 +12,7 @@ import bgTexture2 from '/images/2.jpg';
 import bgTexture3 from '/images/3.jpg';
 import bgTexture4 from '/images/4.jpg';
 import sunTexture from '/images/sun.jpg';
+import funTexture from '/images/fun.jpg';
 import mercuryTexture from '/images/mercurymap.jpg';
 import mercuryBump from '/images/mercurybump.jpg';
 import venusTexture from '/images/venusmap.jpg';
@@ -55,8 +56,9 @@ console.log(x);
 console.log("Create the scene");
 const scene = new THREE.Scene();
 
+
 console.log("Create a perspective projection camera");
-var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20000000);
 camera.position.set(-175, 115, 5);
 
 console.log("Create the renderer");
@@ -196,6 +198,8 @@ function identifyPlanet(clickedObject) {
         offset = 10;
         return pluto;
     }
+
+
 
     return null;
 }
