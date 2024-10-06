@@ -12,7 +12,11 @@ import bgTexture2 from '/images/2.jpg';
 import bgTexture3 from '/images/3.jpg';
 import bgTexture4 from '/images/4.jpg';
 import sunTexture from '/images/sun.jpg';
-import funTexture from '/images/fun.jpg';
+import exo1 from '/images/exo1.jpg';
+import exo2 from '/images/exo2.jpg';
+import exo3 from '/images/exo3.jpg';
+import exo4 from '/images/exo4.jpg';
+import exo0 from '/images/exo5.jpg';
 import mercuryTexture from '/images/mercurymap.jpg';
 import mercuryBump from '/images/mercurybump.jpg';
 import venusTexture from '/images/venusmap.jpg';
@@ -183,7 +187,7 @@ function onDocumentMouseDown(event) {
     if (intersects2.length > 0) {
 
         clickedExoPlanet = intersects2[0].object;
-        clickedExoPlanet.material.emissiveIntensity = 20;
+        clickedExoPlanet.material.emissiveIntensity = 0.03;
 
         console.log(clickedExoPlanet);
         selectedExoplanet = identifyExoplanet(clickedExoPlanet); // Get the exoplanet data
@@ -283,7 +287,7 @@ async function showExoPlanetInfo(planetname) {
     }
 
     name.innerText = planetname.name;
-    details.innerText = `Host Name: ${correctExoPlanet.hostname}\nDiscovery Year: ${correctExoPlanet.disc_year}\nDiscovery Facility: ${correctExoPlanet.disc_facility}\nRadius: ${(correctExoPlanet.pl_rade * 6371).toFixed(2)} KM (approx)\nPlanet Mass: ${correctExoPlanet.pl_bmasse} (Earth Masses)\nDistance: ${(correctExoPlanet.sy_dist).toFixed(2)} Parsecs\n Number of Stars: ${correctExoPlanet.sy_snum}`;
+    details.innerText = `Host Name: ${correctExoPlanet.hostname}\nDiscovery Year: ${correctExoPlanet.disc_year}\nDiscovery Facility: ${correctExoPlanet.disc_facility}\nRadius: ${(correctExoPlanet.pl_rade * 6371).toFixed(2)} KM (approx)\nPlanet Mass: ${(correctExoPlanet.pl_bmasse).toFixed(2)} (Earth Masses)\nDistance: ${(correctExoPlanet.sy_dist).toFixed(2)} Parsecs\n Number of Stars: ${correctExoPlanet.sy_snum}`;
     //info.innerText = planetname;
 
     info.style.display = 'block';
@@ -315,7 +319,7 @@ let zoomOutTargetPosition = new THREE.Vector3(-175, 115, 5);
 // close 'x' button function
 function closeInfo() {
     if(clickedExoPlanet){
-        clickedExoPlanet.material.emissiveIntensity = 100;
+        clickedExoPlanet.material.emissiveIntensity = 5;
 
     }
     var info = document.getElementById('planetInfo');
@@ -461,11 +465,11 @@ const exoplanetsArray = []; // Array to store exoplanet meshes
 const textureMap = {};
 const planetNameMap = {};
 
-function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moons, emissiveColor = 0x1232112) {
+function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moons, emissiveColor = 0xffffff) {
     const material = new THREE.MeshPhongMaterial({
         map: loadTexture.load(texture),
         emissive: emissiveColor,  // Set emissive color
-        emissiveIntensity: 100,  // Adjust intensity as needed
+        emissiveIntensity: 5,  // Adjust intensity as needed
     });
 
 
@@ -481,7 +485,7 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
     planet.rotation.z = tilt * Math.PI / 180;
     exoplanetsArray.push(planet3d);
 
-    var exoplanetTexture = `${funTexture}`;
+    //var exoplanetTexture = `${funTexture}`;
     textureMap[texture] = planet3d;
     planetNameMap[texture] = planetName;
 
