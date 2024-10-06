@@ -244,6 +244,7 @@ function identifyPlanet(clickedObject) {
 
 var x, y, z;
 let name = "";
+var correctExoPlanet;
 function identifyExoplanet(clickedObject) {
     console.log(clickedObject.x);
     x = clickedObject.position.x;
@@ -261,19 +262,40 @@ function identifyExoplanet(clickedObject) {
 
 }
 
-function showExoPlanetInfo(planetname){
+
+var info = [];
+var exoPlanetInfo=[];
+var exoPlanets = [];
+console.log(info);
+async function showExoPlanetInfo(planetname) {
     var info = document.getElementById('planetInfo');
     var name = document.getElementById('planetName');
     var details = document.getElementById('planetDetails');
 
+
+    exoPlanets = await loadExoPlanetJson();
+
+    for (let i = 0; i < exoPlanets.length; i++) {
+        if (exoPlanets[i].pl_name == planetname.name) {
+            correctExoPlanet = exoPlanets[i];
+        }
+
+    }
+
     name.innerText = planetname.name;
-    details.innerText = "This is an exoplanet";
+    details.innerText = `Host Name: ${correctExoPlanet.hostname}\nDiscovery Year: ${correctExoPlanet.disc_year}\nDiscovery Facility: ${correctExoPlanet.disc_facility}\nRadius: ${(correctExoPlanet.pl_rade * 6371).toFixed(2)} KM (approx)\nPlanet Mass: ${correctExoPlanet.pl_bmasse} (Earth Masses)\nDistance: ${(correctExoPlanet.sy_dist).toFixed(2)} Parsecs\n Number of Stars: ${correctExoPlanet.sy_snum}`;
     //info.innerText = planetname;
 
     info.style.display = 'block';
 
 }
-
+//info = loadPlanetsFromJSON();
+//console.log(info);
+async function loadExoPlanetJson(){
+    exoPlanetInfo = await loadPlanetsFromJSON();
+    //console.log(exoPlanetInfo);
+    return exoPlanetInfo;
+}
 
 // ******  SHOW PLANET INFO AFTER SELECTION  ******
 function showPlanetInfo(planet) {
@@ -292,7 +314,10 @@ let zoomOutTargetPosition = new THREE.Vector3(-175, 115, 5);
 
 // close 'x' button function
 function closeInfo() {
-    clickedExoPlanet.material.emissiveIntensity = 100;
+    if(clickedExoPlanet){
+        clickedExoPlanet.material.emissiveIntensity = 100;
+
+    }
     var info = document.getElementById('planetInfo');
     info.style.display = 'none';
     settings.accelerationOrbit = 1;
