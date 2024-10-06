@@ -174,16 +174,21 @@ function onDocumentMouseDown(event) {
     }
     if (intersects2.length > 0) {
         const clickedExoplanet = intersects2[0].object;
-        selectedPlanet = identifyExoplanet(clickedExoplanet);
-        console.log(selectedPlanet);
-        console.log(selectedPlanet);
-        console.log(selectedPlanet);
-        console.log(selectedPlanet);
-        // Handle the selected exoplanet
-        console.log('You clicked on an exoplanet:', clickedExoplanet);
+        console.log(allExoPlanets);
+        console.log(clickedExoplanet.position);
+        selectedExoplanet = identifyExoplanet(clickedExoplanet); // Get the exoplanet data
 
-        // For example, you could zoom in or show planet info
-        showPlanetInfo(clickedExoplanet.name || "Unknown Exoplanet");
+        //console.log('Exoplanet clicked:', selectedExoplanet);  // Check if this part is hit
+        if (selectedExoplanet) {
+            console.log("name " + selectedExoplanet);
+            // Log the exoplanet's details to the console
+            //console.log(`Exoplanet identified: ${selectedExoplanet.name}`);
+            //console.log('Exoplanet details:', selectedExoplanet);
+            //console.log("fuck")
+
+            // Optionally show exoplanet info in the modal
+            showExoPlanetInfo(selectedExoplanet);
+        }
     }
 }
 
@@ -220,12 +225,38 @@ function identifyPlanet(clickedObject) {
     return null;
 }
 
+var x, y, z;
+let name = "";
 function identifyExoplanet(clickedObject) {
-    if (clickedObject in textureMap) {
-        return textureMap[clickedObject.material];
+    console.log(clickedObject.x);
+    x = clickedObject.position.x;
+    y = clickedObject.position.y;
+    z = clickedObject.position.z;
+    //console.log(allExoPlanets[i].planet.position);
+    for(let i = 0; i < allExoPlanets.length; i++){
+        if(allExoPlanets[i].planet.position.x == x && allExoPlanets[i].planet.position.y == y && allExoPlanets[i].planet.position.z == z){
+            name = allExoPlanets[i].name
+            console.log(allExoPlanets[i].name);
+        };
+
     }
-    return null;
+    return name;
+
 }
+
+function showExoPlanetInfo(planetname){
+    var info = document.getElementById('planetInfo');
+    var name = document.getElementById('planetName');
+    var details = document.getElementById('planetDetails');
+
+    name.innerText = planetname;
+    details.innerText = "This is an exoplanet";
+    //info.innerText = planetname;
+
+    info.style.display = 'block';
+
+}
+
 
 // ******  SHOW PLANET INFO AFTER SELECTION  ******
 function showPlanetInfo(planet) {
@@ -385,12 +416,13 @@ function createPlanet(planetName, size, position, tilt, texture, bump, ring, atm
 
 const exoplanetsArray = []; // Array to store exoplanet meshes
 const textureMap = {};
+const planetNameMap = {};
 
 function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moons, emissiveColor = 0x1232112) {
     const material = new THREE.MeshPhongMaterial({
         map: loadTexture.load(texture),
         emissive: emissiveColor,  // Set emissive color
-        emissiveIntensity: 500,  // Adjust intensity as needed
+        emissiveIntensity: 100,  // Adjust intensity as needed
     });
 
 
@@ -408,6 +440,7 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
 
     var exoplanetTexture = `${funTexture}`;
     textureMap[texture] = planet3d;
+    planetNameMap[texture] = planetName;
 
 
     // Add atmosphere
@@ -631,7 +664,7 @@ function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
     const y = scaledDistance * Math.cos(dec_rad) * Math.sin(ra_rad);
     const z = scaledDistance * Math.sin(dec_rad);
 
-    console.log(`Calculated position x: ${x}, y: ${y}, z: ${z} for exoplanet`);
+    //console.log(`Calculated position x: ${x}, y: ${y}, z: ${z} for exoplanet`);
 
     return new THREE.Vector3(x, y, z);
 }
@@ -639,6 +672,7 @@ function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
 // to keep track of what exoplanets are rendered
 var renderedExoplanets = [];
 var materialExoplanetMap = {};
+const allExoPlanets = [];
 async function createExoplanetsFromJSON(diameter=5) {
     const exoplanets = await loadPlanetsFromJSON(diameter);
 
@@ -664,11 +698,10 @@ async function createExoplanetsFromJSON(diameter=5) {
         // Calculate the position using RA, Dec, and scaled distance
         const position = calculateExoplanetPosition(ra_num, dec_num, distance_num);
 
-        // console.log(`Calculated position for exoplanet ${pl_name}:`, position);
 
         // Create the planet
         const planet = createExoplanet(pl_name, pl_rade*4, position, 0, funTexture);
-
+        //console.log(planet);
         // console.log(`Created exoplanet ${pl_name} at position`, position);
 
         // Add the planet to the scene
@@ -676,8 +709,11 @@ async function createExoplanetsFromJSON(diameter=5) {
 
         // Add planet to rendered exoplanets
         renderedExoplanets.push(planet.planet3d);
+        allExoPlanets.push(planet);
+
     });
 }
+
 
 
 // Call the function to create exoplanets
