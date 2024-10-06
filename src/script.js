@@ -56,15 +56,18 @@ console.log(x);
 console.log("Create the scene");
 const scene = new THREE.Scene();
 
+const container = document.getElementById('solar-system');
+const stl = getComputedStyle(container);
+const [w, h] = [parseInt(stl.width), parseInt(stl.height)];
 
 console.log("Create a perspective projection camera");
-var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20000000);
+var camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 20000000);
 camera.position.set(-175, 115, 5);
 
 console.log("Create the renderer");
 const renderer = new THREE.WebGL1Renderer();
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+renderer.setSize(w, h, false);
+container.appendChild(renderer.domElement);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
 console.log("Create an orbit control");
@@ -82,7 +85,7 @@ const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
 
 // ******  OUTLINE PASS  ******
-const outlinePass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera);
+const outlinePass = new OutlinePass(new THREE.Vector2(w, h), scene, camera);
 outlinePass.edgeStrength = 3;
 outlinePass.edgeGlow = 1;
 outlinePass.visibleEdgeColor.set(0xffffff);
@@ -90,7 +93,7 @@ outlinePass.hiddenEdgeColor.set(0x190a05);
 composer.addPass(outlinePass);
 
 // ******  BLOOM PASS  ******
-const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1, 0.4, 0.85);
+const bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 1, 0.4, 0.85);
 bloomPass.threshold = 1;
 bloomPass.radius = 0.9;
 composer.addPass(bloomPass);
@@ -131,8 +134,8 @@ const mouse = new THREE.Vector2();
 
 function onMouseMove(event) {
     event.preventDefault();
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    mouse.x = ((event.clientX - container.offsetLeft) / w) * 2 - 1;
+    mouse.y = -((event.clientY - container.offsetTop) / h) * 2 + 1;
 }
 
 // ******  SELECT PLANET  ******
@@ -145,8 +148,8 @@ let offset;
 function onDocumentMouseDown(event) {
     event.preventDefault();
 
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+    mouse.x = ((event.clientX - container.offsetLeft) / w) * 2 - 1;
+    mouse.y = -((event.clientY - container.offsetTop) / h) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
     var intersects2 = raycaster.intersectObjects(exoplanetsArray, true); // Use true for recursive checking
@@ -938,8 +941,8 @@ animate();
 window.addEventListener('mousemove', onMouseMove, false);
 window.addEventListener('mousedown', onDocumentMouseDown, false);
 window.addEventListener('resize', function () {
-    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.aspect = w / h;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    composer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(w, h);
+    composer.setSize(w, h);
 });
