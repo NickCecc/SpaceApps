@@ -58,7 +58,7 @@ const scene = new THREE.Scene();
 
 
 console.log("Create a perspective projection camera");
-var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 20000000);
+var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 90000000);
 camera.position.set(-175, 115, 5);
 
 console.log("Create the renderer");
@@ -70,8 +70,13 @@ renderer.toneMapping = THREE.ACESFilmicToneMapping;
 console.log("Create an orbit control");
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
-controls.dampingFactor = 0.75;
 controls.screenSpacePanning = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.2;
+controls.zoomSpeed = 100;
+controls.rotateSpeed = 1.5;
+controls.panSpeed = 1.5;
+controls.maxDistance = 1000000;            // Maximum distance the camera can zoom out
 
 console.log("Set up texture loader");
 const cubeTextureLoader = new THREE.CubeTextureLoader();
@@ -166,8 +171,8 @@ function onDocumentMouseDown(event) {
 
             // Update camera to look at the selected planet
             const planetPosition = new THREE.Vector3();
-            selectedPlanet.planet.getWorldPosition(planetPosition);
-            //console.log(selectedPlanet.planet.getWorldPosition(planetPosition));
+            // selectedPlanet.planet.getWorldPosition(planetPosition);
+            console.log(selectedPlanet.planet.getWorldPosition(planetPosition));
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
             console.log(planetPosition);
@@ -190,7 +195,7 @@ function onDocumentMouseDown(event) {
 
             console.log("name " + selectedExoplanet);
             const planetPosition = new THREE.Vector3();
-
+            selectedExoplanet.planet.getWorldPosition(planetPosition);
 
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
@@ -199,8 +204,7 @@ function onDocumentMouseDown(event) {
             targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(offset));
             isMovingTowardsExoPlanet = true;
 
-            // Optionally show exoplanet info in the modal
-            //showExoPlanetInfo(selectedExoplanet);
+
         }
     }
 }
@@ -211,7 +215,7 @@ function identifyPlanet(clickedObject) {
         offset = 10;
         return mercury;
     } else if (clickedObject.material === venus.Atmosphere.material) {
-        offset = 25;
+        offset = 25;    // the higher the offset, the more distance there is when selecting planet
         return venus;
     } else if (clickedObject.material === earth.Atmosphere.material) {
         offset = 25;
@@ -248,8 +252,8 @@ function identifyExoplanet(clickedObject) {
     //console.log(allExoPlanets[i].planet.position);
     for(let i = 0; i < allExoPlanets.length; i++){
         if(allExoPlanets[i].planet.position.x == x && allExoPlanets[i].planet.position.y == y && allExoPlanets[i].planet.position.z == z){
-            name = allExoPlanets[i].name
             console.log(allExoPlanets[i].name);
+            return allExoPlanets[i];
         };
 
     }
@@ -867,6 +871,7 @@ neptune.planet.receiveShadow = true;
 pluto.planet.receiveShadow = true;
 
 
+
 function animate() {
 
     //rotating planets around the sun and itself
@@ -958,6 +963,29 @@ function animate() {
             outlinePass.selectedObjects = [intersectedObject];
         }
     }
+
+    if (isMovingTowardsExoPlanet){
+        // Smoothly move the camera towards the target position
+        camera.position.lerp(targetCameraPosition, 0.03);
+
+        // Check if the camera is close to the target position
+        if (camera.position.distanceTo(targetCameraPosition) < 150) {
+            isMovingTowardsExoPlanet = false;
+            showExoPlanetInfo(selectedExoplanet)
+
+        }
+    } else if (isZoomingOut) {
+        camera.position.lerp(zoomOutTargetPosition, 0.05);
+
+        if (camera.position.distanceTo(zoomOutTargetPosition) < 1) {
+            isZoomingOut = false;
+        }
+    }
+
+
+
+
+
 // ******  ZOOM IN/OUT  ******
     if (isMovingTowardsPlanet) {
         // Smoothly move the camera towards the target position
@@ -966,7 +994,7 @@ function animate() {
         // Check if the camera is close to the target position
         if (camera.position.distanceTo(targetCameraPosition) < 1) {
             isMovingTowardsPlanet = false;
-            showPlanetInfo(selectedPlanet.name);
+            showPlanetInfo(selectedPlanet.name)
 
         }
     } else if (isZoomingOut) {
