@@ -1,3 +1,26 @@
+.table-container {
+    max-height: 300px; /* Adjust according to your preference */
+    overflow-y: auto;
+    /*border: 1px solid #ccc;*/
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #f4f4f4 !important;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
 .planet-info {
     display: none;
     position: absolute;

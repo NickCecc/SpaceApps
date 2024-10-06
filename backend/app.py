@@ -29,6 +29,7 @@ def getPlanetsByTelescopeDiameter(diameter: int = 5):
 
     df['ESmax'] = 15*(diameter/6)/df['pl_orbsmax']
     data = df[calc_snr(df['st_rad'], df['pl_rade'], diameter, df['sy_dist'], df['pl_orbsmax']) > MIN_SNR]
+    data['snr'] = calc_snr(data['st_rad'], data['pl_rade'], diameter, data['sy_dist'], data['pl_orbsmax'])
     data = data[data['sy_dist'] < data['ESmax']]
 
     json_data = json.loads(data.to_json(orient='records'))

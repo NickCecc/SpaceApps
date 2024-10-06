@@ -46,6 +46,82 @@ container.style.width = '100%';
 container.style.height = '100%';
 container.style.position = 'relative';
 
+const renderTable = () => {
+    const tbody = document.querySelector('#planetsTable tbody');
+    tbody.innerHTML = '';
+
+    renderedExoplanetsData.forEach(exoplanet => {
+
+    const row = document.createElement('tr');
+
+        // add to table
+        const properties = [exoplanet.pl_name, exoplanet.pl_rade, exoplanet.st_rad, exoplanet.sy_dist, exoplanet.pl_orbsmax, exoplanet.snr, exoplanet.ESmax];
+        properties.forEach(property => {
+            const cell = document.createElement('td');
+            if (property === exoplanet.snr) {
+                cell.textContent = property.toFixed(2);
+            } else {
+                cell.textContent = property;
+            }
+            row.appendChild(cell);
+        });
+
+        tbody.appendChild(row);
+    });
+};
+
+var planetRadAscending = true;
+const sortByPlanetRadius = () => {
+    renderedExoplanetsData.sort((a,b) => (planetRadAscending ? 1 : -1) * (a.pl_rade - b.pl_rade));
+    planetRadAscending = !planetRadAscending;
+    renderTable();
+};
+document.querySelector('#pradHeader').addEventListener('click', sortByPlanetRadius);
+
+
+var stellarRadAscending = true;
+const sortByStellarRadius = () => {
+    renderedExoplanetsData.sort((a,b) => (stellarRadAscending ? 1 : -1) * (a.st_rad - b.st_rad));
+    stellarRadAscending = !stellarRadAscending;
+    renderTable();
+};
+document.querySelector('#sradHeader').addEventListener('click', sortByStellarRadius);
+
+var distAscending = true;
+const sortByDistance = () => {
+    renderedExoplanetsData.sort((a,b) => (distAscending ? 1 : -1) * (a.sy_dist - b.sy_dist));
+    distAscending = !distAscending;
+    renderTable();
+};
+document.querySelector('#distHeader').addEventListener('click', sortByDistance);
+
+var psDistAscending = true;
+const sortByPSDistance = () => {
+    renderedExoplanetsData.sort((a,b) => (psDistAscending ? 1 : -1) * (a.pl_orbsmax - b.pl_orbsmax));
+    psDistAscending = !psDistAscending;
+    renderTable();
+};
+document.querySelector('#psdistHeader').addEventListener('click', sortByPSDistance);
+
+var snrAscending = true;
+const sortBySNR = () => {
+    renderedExoplanetsData.sort((a,b) => (snrAscending ? 1 : -1) * (a.snr - b.snr));
+    snrAscending = !snrAscending;
+    renderTable();
+};
+document.querySelector('#snrHeader').addEventListener('click', sortBySNR);
+
+var esMaxAscending = true;
+const sortByESMax = () => {
+    renderedExoplanetsData.sort((a,b) => (esMaxAscending ? 1 : -1) * (a.ESmax - b.ESmax));
+    esMaxAscending = !esMaxAscending;
+    renderTable();
+};
+document.querySelector('#esMaxHeader').addEventListener('click', sortByESMax);
+
+
+
+
 
 async function loadPlanetsFromJSON(diameter=5) {
     try {
@@ -57,10 +133,6 @@ async function loadPlanetsFromJSON(diameter=5) {
         console.error('Error loading planets JSON:', error);
     }
 }
-
-// Call the function to load and create planets from JSON
-var x = loadPlanetsFromJSON();
-
 
 
 const scene = new THREE.Scene();
@@ -138,6 +210,7 @@ gui.add(settings, 'sunIntensity', 1, 10).onChange(value => {
 });
 gui.add(settings, 'telescopeDiameter', 5, 15, 1).onFinishChange(value => {
     createExoplanetsFromJSON(value);
+    document.getElementById('tele-diam').textContent = `Telescope diameter: ${value} m`;
 })
 
 // mouse movement
@@ -723,14 +796,16 @@ function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
 var renderedExoplanets = [];
 var materialExoplanetMap = {};
 const allExoPlanets = [];
+var renderedExoplanetsData = [];
 async function createExoplanetsFromJSON(diameter=5) {
     const exoplanets = await loadPlanetsFromJSON(diameter);
-
+    renderedExoplanetsData = exoplanets;
     renderedExoplanets.forEach(exoplanet =>{
         scene.remove(exoplanet);
     });
     renderedExoplanets = [];
 
+    const tbody = document.querySelector('#planetsTable tbody');
     exoplanets.forEach(planetData => {
         const {pl_name, ra, dec, sy_dist, pl_rade} = planetData;
 
@@ -777,6 +852,9 @@ async function createExoplanetsFromJSON(diameter=5) {
         allExoPlanets.push(planet);
 
     });
+
+    renderTable();
+    document.getElementById('exo-count').textContent = `Exoplanets: ${renderedExoplanets.length}`;
 }
 
 
