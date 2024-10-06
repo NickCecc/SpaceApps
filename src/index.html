@@ -15,18 +15,19 @@
     </style>
 </head>
 <body>
-<!--    <div id="solar-system-container"></div>-->
-    <div id="solar-system" style="margin-top: 50px; height: 400px; width: 600px; position: relative;">
-        <div id="gui-container"></div>
-    </div>
-
-    <div id="planetInfo" class="planet-info">
-        <div class="planet-info-content">
-            <span class="close-btn" onclick="closeInfo()">&times;</span>
-            <h2 id="planetName"></h2>
-            <p id="planetDetails"></p>
+    <div style="align-content: center; height: 400px; width: 600px;">
+        <div id="solar-system">
+            <div id="gui-container"></div>
+            <div id="planetInfo" class="planet-info">
+                <div class="planet-info-content">
+                    <span class="close-btn" onclick="closeInfo()">&times;</span>
+                    <h2 id="planetName"></h2>
+                    <p id="planetDetails"></p>
+                </div>
+            </div>
         </div>
     </div>
+
 
     <script type="module" src="./script.js"></script>
 </body>

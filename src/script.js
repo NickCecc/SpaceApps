@@ -37,6 +37,12 @@ import uraRingTexture from '/images/uranus_ring.png';
 import neptuneTexture from '/images/neptune.jpg';
 import plutoTexture from '/images/plutomap.jpg';
 
+const container = document.getElementById('solar-system');
+container.style.width = '100%';
+container.style.height = '100%';
+container.style.position = 'relative';
+
+
 async function loadPlanetsFromJSON(diameter=5) {
     try {
         // Use Fetch API to load the planets.json file
@@ -56,7 +62,6 @@ console.log(x);
 console.log("Create the scene");
 const scene = new THREE.Scene();
 
-const container = document.getElementById('solar-system');
 const stl = getComputedStyle(container);
 const [w, h] = [parseInt(stl.width), parseInt(stl.height)];
 
