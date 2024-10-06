@@ -1,6 +1,6 @@
 .planet-info {
     display: none;
-    position: fixed;
+    position: absolute;
     left: 1%; 
     top: 25%; 
     width: 30%; 
