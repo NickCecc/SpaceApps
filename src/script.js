@@ -54,24 +54,23 @@ async function loadPlanetsFromJSON(diameter=5) {
 
 // Call the function to load and create planets from JSON
 var x = loadPlanetsFromJSON();
-console.log(x);
 
-// ******  SETUP  ******
-console.log("Create the scene");
+
+
 const scene = new THREE.Scene();
 
 
-console.log("Create a perspective projection camera");
+
 var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 90000000);
 camera.position.set(-175, 115, 5);
 
-console.log("Create the renderer");
+
 const renderer = new THREE.WebGL1Renderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 
-console.log("Create an orbit control");
+
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 controls.screenSpacePanning = false;
@@ -82,7 +81,7 @@ controls.rotateSpeed = 1.5;
 controls.panSpeed = 1.5;
 controls.maxDistance = 1000000;            // Maximum distance the camera can zoom out
 
-console.log("Set up texture loader");
+
 const cubeTextureLoader = new THREE.CubeTextureLoader();
 const loadTexture = new THREE.TextureLoader();
 
@@ -105,7 +104,7 @@ bloomPass.radius = 0.9;
 composer.addPass(bloomPass);
 
 // ****** AMBIENT LIGHT ******
-console.log("Add the ambient light");
+
 var lightAmbient = new THREE.AmbientLight(0x222222, 6);
 scene.add(lightAmbient);
 
@@ -176,10 +175,9 @@ function onDocumentMouseDown(event) {
             // Update camera to look at the selected planet
             const planetPosition = new THREE.Vector3();
             // selectedPlanet.planet.getWorldPosition(planetPosition);
-            console.log(selectedPlanet.planet.getWorldPosition(planetPosition));
+            selectedPlanet.planet.getWorldPosition(planetPosition);
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
-            console.log(planetPosition);
             targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(offset));
             isMovingTowardsPlanet = true;
         }
@@ -189,21 +187,17 @@ function onDocumentMouseDown(event) {
         clickedExoPlanet = intersects2[0].object;
         clickedExoPlanet.material.emissiveIntensity = 0.03;
 
-        console.log(clickedExoPlanet);
         selectedExoplanet = identifyExoplanet(clickedExoPlanet); // Get the exoplanet data
 
-        //console.log('Exoplanet clicked:', selectedExoplanet);  // Check if this part is hit
         if (selectedExoplanet) {
             closeInfoNoZoomOut();
             settings.accelerationOrbit = 0; // Stop orbital movement
 
-            console.log("name " + selectedExoplanet);
             const planetPosition = new THREE.Vector3();
             selectedExoplanet.planet.getWorldPosition(planetPosition);
 
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
-            console.log(clickedExoPlanet.position);
             offset = 50;
             targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(offset));
             isMovingTowardsExoPlanet = true;
@@ -250,14 +244,14 @@ var x, y, z;
 let name = "";
 var correctExoPlanet;
 function identifyExoplanet(clickedObject) {
-    console.log(clickedObject.x);
+
     x = clickedObject.position.x;
     y = clickedObject.position.y;
     z = clickedObject.position.z;
-    //console.log(allExoPlanets[i].planet.position);
+
     for(let i = 0; i < allExoPlanets.length; i++){
         if(allExoPlanets[i].planet.position.x == x && allExoPlanets[i].planet.position.y == y && allExoPlanets[i].planet.position.z == z){
-            console.log(allExoPlanets[i].name);
+
             return allExoPlanets[i];
         };
 
@@ -270,7 +264,7 @@ function identifyExoplanet(clickedObject) {
 var info = [];
 var exoPlanetInfo=[];
 var exoPlanets = [];
-console.log(info);
+
 async function showExoPlanetInfo(planetname) {
     var info = document.getElementById('planetInfo');
     var name = document.getElementById('planetName');
@@ -294,10 +288,10 @@ async function showExoPlanetInfo(planetname) {
 
 }
 //info = loadPlanetsFromJSON();
-//console.log(info);
+
 async function loadExoPlanetJson(){
     exoPlanetInfo = await loadPlanetsFromJSON();
-    //console.log(exoPlanetInfo);
+
     return exoPlanetInfo;
 }
 
@@ -465,6 +459,8 @@ const exoplanetsArray = []; // Array to store exoplanet meshes
 const textureMap = {};
 const planetNameMap = {};
 
+
+
 function createExoplanet(planetName, size, position, tilt, texture, bump, ring, atmosphere, moons, emissiveColor = 0xffffff) {
     const material = new THREE.MeshPhongMaterial({
         map: loadTexture.load(texture),
@@ -539,7 +535,7 @@ function createExoplanet(planetName, size, position, tilt, texture, bump, ring, 
     return {name, planet, planet3d, Atmosphere, moons, planetSystem, emissiveColor};
 }
 
-console.log(exoplanetsArray);
+
 
 // ******  LOADING OBJECTS METHOD  ******
 function loadObject(path, position, scale, callback) {
@@ -711,7 +707,7 @@ function calculateExoplanetPosition(ra_degrees, dec_degrees, distance) {
     const y = scaledDistance * Math.cos(dec_rad) * Math.sin(ra_rad);
     const z = scaledDistance * Math.sin(dec_rad);
 
-    //console.log(`Calculated position x: ${x}, y: ${y}, z: ${z} for exoplanet`);
+
 
     return new THREE.Vector3(x, y, z);
 }
@@ -735,7 +731,6 @@ async function createExoplanetsFromJSON(diameter=5) {
         const dec_num = parseFloat(dec);
         const distance_num = parseFloat(sy_dist);
 
-        // console.log(`Creating exoplanet ${pl_name} with ra: ${ra_num}, dec: ${dec_num}, distance: ${distance_num}`);
 
         if (isNaN(ra_num) || isNaN(dec_num) || isNaN(distance_num) || distance_num <= 0) {
             console.error(`Invalid data for exoplanet ${pl_name}, skipping.`);
@@ -745,11 +740,27 @@ async function createExoplanetsFromJSON(diameter=5) {
         // Calculate the position using RA, Dec, and scaled distance
         const position = calculateExoplanetPosition(ra_num, dec_num, distance_num);
 
+        var texChoice = (Math.random() *(4)).toFixed(0);
+
+        var funTexture;
+        if (texChoice == 0){
+            funTexture = exo1;
+        }
+        if (texChoice == 1){
+            funTexture = exo2;
+        }
+        if (texChoice == 2){
+            funTexture = exo3;
+        }
+        if (texChoice == 3){
+            funTexture = exo4;
+        }
+        if (texChoice == 4){
+            funTexture = exo0;
+        }
 
         // Create the planet
         const planet = createExoplanet(pl_name, pl_rade*4, position, 0, funTexture);
-        //console.log(planet);
-        // console.log(`Created exoplanet ${pl_name} at position`, position);
 
         // Add the planet to the scene
         scene.add(planet.planet3d);
