@@ -139,6 +139,8 @@ function onMouseMove(event) {
 let selectedPlanet = null;
 let selectedExoplanet = null
 let isMovingTowardsPlanet = false;
+let isMovingTowardsExoPlanet = false;
+
 let targetCameraPosition = new THREE.Vector3();
 let offset;
 
@@ -165,6 +167,7 @@ function onDocumentMouseDown(event) {
             // Update camera to look at the selected planet
             const planetPosition = new THREE.Vector3();
             selectedPlanet.planet.getWorldPosition(planetPosition);
+            //console.log(selectedPlanet.planet.getWorldPosition(planetPosition));
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
 
@@ -173,6 +176,7 @@ function onDocumentMouseDown(event) {
         }
     }
     if (intersects2.length > 0) {
+
         const clickedExoplanet = intersects2[0].object;
         console.log(allExoPlanets);
         console.log(clickedExoplanet.position);
@@ -180,14 +184,22 @@ function onDocumentMouseDown(event) {
 
         //console.log('Exoplanet clicked:', selectedExoplanet);  // Check if this part is hit
         if (selectedExoplanet) {
+            closeInfoNoZoomOut();
+            settings.accelerationOrbit = 0; // Stop orbital movement
+
             console.log("name " + selectedExoplanet);
-            // Log the exoplanet's details to the console
-            //console.log(`Exoplanet identified: ${selectedExoplanet.name}`);
-            //console.log('Exoplanet details:', selectedExoplanet);
-            //console.log("fuck")
+            const planetPosition = new THREE.Vector3();
+
+
+            controls.target.copy(planetPosition);
+            camera.lookAt(planetPosition); // Orient the camera towards the planet
+
+
+            targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(10));
+            isMovingTowardsExoPlanet = true;
 
             // Optionally show exoplanet info in the modal
-            showExoPlanetInfo(selectedExoplanet);
+            //showExoPlanetInfo(selectedExoplanet);
         }
     }
 }
