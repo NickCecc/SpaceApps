@@ -46,6 +46,8 @@ container.style.width = '100%';
 container.style.height = '100%';
 container.style.position = 'relative';
 
+const baseTableHeight = document.getElementById('planet-table').offsetTop;
+
 const renderTable = () => {
     const tbody = document.querySelector('#planetsTable tbody');
     tbody.innerHTML = '';
@@ -134,13 +136,12 @@ async function loadPlanetsFromJSON(diameter=5) {
     }
 }
 
-
 const scene = new THREE.Scene();
 
 const stl = getComputedStyle(container);
 const [w, h] = [parseInt(stl.width), parseInt(stl.height)];
 
-var camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 20000000);
+var camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 20000);
 camera.position.set(-175, 115, 5);
 
 
@@ -155,7 +156,7 @@ controls.enableDamping = true;
 controls.screenSpacePanning = false;
 controls.enableDamping = true;
 controls.dampingFactor = 0.2;
-controls.zoomSpeed = 100;
+controls.zoomSpeed = 25;
 controls.rotateSpeed = 1.5;
 controls.panSpeed = 1.5;
 controls.maxDistance = 1000000;            // Maximum distance the camera can zoom out
@@ -219,8 +220,13 @@ const mouse = new THREE.Vector2();
 
 function onMouseMove(event) {
     event.preventDefault();
-    mouse.x = ((event.clientX - container.offsetLeft) / w) * 2 - 1;
-    mouse.y = -((event.clientY - container.offsetTop) / h) * 2 + 1;
+
+    const rect = renderer.domElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    mouse.x = (x / w) * 2 - 1;
+    mouse.y = -(y / h) * 2 + 1;
+
 }
 
 // ******  SELECT PLANET  ******
@@ -235,8 +241,11 @@ let clickedExoPlanet;
 function onDocumentMouseDown(event) {
     event.preventDefault();
 
-    mouse.x = ((event.clientX - container.offsetLeft) / w) * 2 - 1;
-    mouse.y = -((event.clientY - container.offsetTop) / h) * 2 + 1;
+    const rect = renderer.domElement.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    mouse.x = (x / w) * 2 - 1;
+    mouse.y = -(y / h) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
     var intersects2 = raycaster.intersectObjects(exoplanetsArray, true); // Use true for recursive checking
@@ -799,7 +808,7 @@ const allExoPlanets = [];
 var renderedExoplanetsData = [];
 async function createExoplanetsFromJSON(diameter=5) {
     const exoplanets = await loadPlanetsFromJSON(diameter);
-    renderedExoplanetsData = exoplanets;
+    renderedExoplanetsData = structuredClone(exoplanets);
     renderedExoplanets.forEach(exoplanet =>{
         scene.remove(exoplanet);
     });
