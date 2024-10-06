@@ -143,7 +143,7 @@ let isMovingTowardsExoPlanet = false;
 
 let targetCameraPosition = new THREE.Vector3();
 let offset;
-
+let clickedExoPlanet;
 function onDocumentMouseDown(event) {
     event.preventDefault();
 
@@ -170,17 +170,18 @@ function onDocumentMouseDown(event) {
             //console.log(selectedPlanet.planet.getWorldPosition(planetPosition));
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
-
+            console.log(planetPosition);
             targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(offset));
             isMovingTowardsPlanet = true;
         }
     }
     if (intersects2.length > 0) {
 
-        const clickedExoplanet = intersects2[0].object;
-        console.log(allExoPlanets);
-        console.log(clickedExoplanet.position);
-        selectedExoplanet = identifyExoplanet(clickedExoplanet); // Get the exoplanet data
+        clickedExoPlanet = intersects2[0].object;
+        clickedExoPlanet.material.emissiveIntensity = 20;
+
+        console.log(clickedExoPlanet);
+        selectedExoplanet = identifyExoplanet(clickedExoPlanet); // Get the exoplanet data
 
         //console.log('Exoplanet clicked:', selectedExoplanet);  // Check if this part is hit
         if (selectedExoplanet) {
@@ -193,9 +194,9 @@ function onDocumentMouseDown(event) {
 
             controls.target.copy(planetPosition);
             camera.lookAt(planetPosition); // Orient the camera towards the planet
-
-
-            targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(10));
+            console.log(clickedExoPlanet.position);
+            offset = 50;
+            targetCameraPosition.copy(planetPosition).add(camera.position.clone().sub(planetPosition).normalize().multiplyScalar(offset));
             isMovingTowardsExoPlanet = true;
 
             // Optionally show exoplanet info in the modal
@@ -261,7 +262,7 @@ function showExoPlanetInfo(planetname){
     var name = document.getElementById('planetName');
     var details = document.getElementById('planetDetails');
 
-    name.innerText = planetname;
+    name.innerText = planetname.name;
     details.innerText = "This is an exoplanet";
     //info.innerText = planetname;
 
@@ -287,6 +288,7 @@ let zoomOutTargetPosition = new THREE.Vector3(-175, 115, 5);
 
 // close 'x' button function
 function closeInfo() {
+    clickedExoPlanet.material.emissiveIntensity = 100;
     var info = document.getElementById('planetInfo');
     info.style.display = 'none';
     settings.accelerationOrbit = 1;
