@@ -202,10 +202,6 @@ const settings = {
     telescopeDiameter: 5
 };
 
-gui.add(settings, 'accelerationOrbit', 0, 10).onChange(value => {
-});
-gui.add(settings, 'acceleration', 0, 10).onChange(value => {
-});
 gui.add(settings, 'sunIntensity', 1, 10).onChange(value => {
     sunMat.emissiveIntensity = value;
 });
